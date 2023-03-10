@@ -1,11 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 
-
-
-
 urlpatterns = [
-    path('', views.TasksView, name='tasks'),
-    path('', include(frontend.urls))
+    path('', views.TasksView, name='tasks')
 ]
