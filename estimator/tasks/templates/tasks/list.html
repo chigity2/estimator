@@ -1,0 +1,46 @@
+{% extends 'tasks/base.html' %}
+{% block title %}
+Tasks
+{% endblock %}
+
+
+{% block content %}
+<h3>Tasks</h3>
+<br />
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert {% for tag in message.extra_tags %}{{ tag }}{% endfor %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+{% endif %}
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <form id="add_task_form" action="" method="post">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" name="task_to_add" placeholder="Add New Task" required>
+                            <button class="btn btn-primary" type="submit" name="add">+</button>
+                        </div>
+                    </form>
+                </div>
+            </div> 
+            {% if tasks %}
+            {% for i in tasks %}
+
+            <div class="d-flex justify-content-between border-bottom mb-2">
+
+                <span>{{ i.task_name }}</span>
+
+                <a class="btn btn-outline-success" role="button" href="list/complete/{{ i.id }}">✓</a>
+
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+</div>
+
+{% endblock %}
