@@ -5,19 +5,21 @@
 <h3 class="my-2">Projects</h3>
 <div class="card shadow">
     <div class="card-header d-flex">
-        <span class="me-auto">Project List</span><button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#project_modal">+</button>
+        <span class="me-auto">Active Project List</span><button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#project_modal">+</button>
     </div>
     <div class="card-body">
         <table class="table">
             <thead>
-                <th scope="col">Number</th>
-                <th scope="col">Name</th>
-                <th scope="col">Units</th>
+                <th class="col">Number</th>
+                <th class="col">Name</th>
+                <th class="col">Wages</th>
+                <th class="col">Units</th>
             </thead>
             {% for project in projects %}
             <tr>
                 <td><a href="{% url 'project_detail' project.id %}">{{ project.number }}</a></td>
                 <td>{{ project.name }}</td>
+                <td>{% if project.state_pw %}<span class="badge bg-warning">PW</span> {% endif %}{% if project.davis_bacon %} <span class="badge bg-warning">DB</span>{% endif %}</td>
                 <td>{{ project.units }}</td>
             </tr>
             {% endfor %}

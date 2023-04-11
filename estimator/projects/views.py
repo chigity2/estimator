@@ -26,7 +26,7 @@ def projects(request):
     tasks = Task.objects.filter(completed=False).filter(assigned_to=request.user.id)
     count = tasks.count()
     owners = Owners.objects.all().order_by('name')
-    projects = Projects.objects.all().order_by('-number')
+    projects = Projects.objects.filter(active=True).order_by('-number')
 
     return render(request, 'projects/projects.html', {'projects': projects, 'owners': owners, 'count': count})
 
