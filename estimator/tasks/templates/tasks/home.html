@@ -6,71 +6,45 @@ Tasks
 
 
 {% block content %}
-<h3>Tasks</h3> Total: {{ tot_count }} ({{ ph_count }} calls - {{ no_count }} tasks)
-<br />
+<div class="d-flex my-3">
+    <span class="me-auto"><h3>Tasks</h3></span>
+    <div class="btn-group ms-auto" role="group">
+        <button type="button" class="btn btn-small btn-primary" data-bs-toggle="modal" data-bs-target="#call_modal"><i class="bi bi-telephone"></i></button>
+        <button type="button" class="btn btn-small btn-primary" data-bs-toggle="modal" data-bs-target="#note_modal"><i class="bi bi-journal-text"></i></button>
+    </div>
+</div>
 
+{% for category in categories %}
 <div class="card my-3 shadow">
     <div class="card-header d-flex">
-        <span class="me-auto">Daily Log</span>
-        <div class="btn-group ms-auto" role="group">
-            <button type="button" class="btn btn-small btn-primary" data-bs-toggle="modal" data-bs-target="#call_modal"><i class="bi bi-telephone"></i></button>
-            <button type="button" class="btn btn-small btn-primary" data-bs-toggle="modal" data-bs-target="#note_modal"><i class="bi bi-journal-text"></i></button>
-        </div>
+        <span class="me-auto">{{ category.category }} Tasks</span>
     </div>
     <div class="card-body">
-        {% for call in call_list %}
-        <div class="d-flex my-1 border-bottom">
-            <span class="me-auto"><i class="bi bi-telephone {% if call.task_date|date:'m-d-Y' < today|date:'m-d-Y' %}text-danger{% endif %}"></i> {{ call.task }}</span>
-            <div class="btn-group ms-auto" role="group">
-                <form method="post" action="{% url 'complete_task' call.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
-                </form>
-                <form method="post" action="{% url 'cancel_task' call.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
-                </form>
+        {% for task in tasks %}
+        {% if task.category == category.category %}
+        <div class="my-1 border-bottom">
+            <div class="d-flex">
+                <span class="me-auto"><i class="bi {% if task.type == 'phone' %}bi-telephone{% else %}bi-journal-text{% endif %} {% if task.task_date|date:'m-d-Y' < today|date:'m-d-Y' %}text-danger{% endif %}"></i> <strong>{{ task.title }}</strong></span>
+                <div class="btn-group ms-auto" role="group">
+                    <form method="post" action="{% url 'complete_task' task.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                    <form method="post" action="{% url 'cancel_task' task.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                    </form>
+                </div>
             </div>
+            <p>
+                {{ task.task }}
+            </p>
         </div>
-        {% endfor %}
-        {% for note in note_list %}
-         <div class="d-flex my-1 border-bottom">
-            <span class="me-auto"><i class="bi bi-journal-text {% if note.task_date|date:'m-d-Y' < today|date:'m-d-Y' %}text-danger{% endif %}"></i> {{ note.task }}</span>
-            <div class="btn-group ms-auto" role="group">
-                <form method="post" action="{% url 'complete_task' note.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
-                </form>
-                <form method="post" action="{% url 'cancel_task' note.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
-                </form>
-            </div>
-        </div>
+        {% endif %}
         {% endfor %}
     </div>
 </div>
-<div class="card my-3 shadow">
-    <div class="card-header">
-        Upcoming Tasks
-    </div>
-    <div class="card-body">
-        {% for task in upcoming %}
-         <div class="d-flex my-1 border-bottom">
-            <span class="me-auto">{{ task.task_date|date:"m-d" }}: <i class="bi {% if task.type == 'note' %}bi-journal-text{% else %}bi-telephone{% endif %}"></i> {{ task.task }}</span>
-                <form method="post" action="{% url 'complete_task' task.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
-                </form>
-                <form method="post" action="{% url 'cancel_task' task.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
-                </form>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
+{% endfor %}
 <div class="modal" id="call_modal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -87,9 +61,19 @@ Tasks
                 <label for="task_date">Task Date</label>
             </div>
             <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="title" name="title">
+                <label for="title">Title</label>
+            </div>
+            <div class="form-floating mb-1">
                 <textarea class="form-control" type="text" id="task" name="task" rows="3"></textarea>
                 <label for="task">Task</label>
             </div>
+            <select class="form-select" name="category" aria-label="Category Select">
+              <option value="General" selected>General</option>
+              {% for project in projects %}
+              <option value="{{ project.name }}">{{ project.name }}</option>
+              {% endfor %}
+            </select>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" value="True" name="quick_add" id="quick_add_ph">
               <label class="form-check-label" for="quick_add_ph">
@@ -121,9 +105,19 @@ Tasks
                 <label for="task_date_note">Task Date</label>
             </div>
             <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="title_note" name="title">
+                <label for="title_note">Title</label>
+            </div>
+            <div class="form-floating mb-1">
                 <textarea class="form-control" id="task_note" name="task" rows="5"></textarea>
                 <label for="task_note">Task</label>
             </div>
+            <select class="form-select" name="category" aria-label="Category Select">
+              <option value="General" selected>General</option>
+              {% for project in projects %}
+              <option value="{{ project.name }}">{{ project.name }}</option>
+              {% endfor %}
+            </select>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" value="True" name="quick_add" id="quick_add">
               <label class="form-check-label" for="quick_add">

@@ -88,6 +88,7 @@ class Projects(models.Model):
     architect = models.ForeignKey(Architects, blank=True, null=True, on_delete=models.SET_NULL)
     owner_contact = models.ForeignKey(OwnersContacts, blank=True, null=True, on_delete=models.SET_NULL)
     architect_contact = models.ForeignKey(ArchitectsContacts, blank=True, null=True, on_delete=models.SET_NULL)
+    active = models.BooleanField(default=True)
 
 
     def __str__(self):

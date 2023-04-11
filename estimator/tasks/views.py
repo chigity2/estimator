@@ -11,6 +11,7 @@ from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
 from datetime import datetime, timedelta, time, date
 from .models import Task, Logs
+from projects.models import Projects
 from django.db.models import Count
 from django.db.models.functions import TruncDay
 
@@ -28,6 +29,7 @@ def home(request):
         tomorrow = today + timedelta(1)
         yesterday = today - timedelta(1)
         tasks = Logs.objects.filter(active_task=True, user=request.user.id, task_date__lt=tomorrow)
+        categories = tasks.distinct('category').values('category')
         count = tasks.count()
         call_list = Logs.objects.filter(active_task=True, user=request.user.id, type='phone', task_date__lt=tomorrow).order_by('-task_date')
         note_list = Logs.objects.filter(active_task=True, user=request.user.id, type='task', task_date__lt=tomorrow).order_by('-task_date')
@@ -35,7 +37,8 @@ def home(request):
         ph_complete_count = Logs.objects.filter(active_task=False, user=request.user.id, type='phone', completed_date__lt=tomorrow, completed_date__gt=yesterday).count()
         note_complete_count = Logs.objects.filter(active_task=False, user=request.user.id, type='task', completed_date__lt=tomorrow, completed_date__gt=yesterday).count()
         total_count = ph_complete_count + note_complete_count
-        return render(request, 'tasks/home.html', {'tasks': tasks, 'count': count, 'call_list': call_list, 'note_list': note_list, 'upcoming': upcoming, 'today': today, 'ph_count': ph_complete_count, 'no_count': note_complete_count, 'tot_count': total_count})
+        projects = Projects.objects.filter(active=True)
+        return render(request, 'tasks/home.html', {'projects': projects, 'tasks': tasks, 'count': count, 'call_list': call_list, 'note_list': note_list, 'upcoming': upcoming, 'today': today, 'ph_count': ph_complete_count, 'no_count': note_complete_count, 'tot_count': total_count, 'categories': categories})
 
 def complete(request, id):
     if request.method == "POST":
@@ -73,6 +76,8 @@ def logs(request):
         task_date = request.POST['task_date']
         type = request.POST['type']
         task = request.POST['task']
+        title = request.POST['title']
+        category = request.POST['category']
         user = User.objects.get(pk=request.user.id)
         quick_add = request.POST.get('quick_add', False)
         if quick_add:
@@ -81,7 +86,7 @@ def logs(request):
         else:
             completed_date = None
             active_task = True
-        l = Logs(task_date=task_date, type=type, task=task, user=user, completed_date=completed_date, active_task=active_task)
+        l = Logs(task_date=task_date, type=type, task=task, user=user, completed_date=completed_date, active_task=active_task, title=title, category=category)
         l.save()
         messages.success(request, 'Task Added')
         return redirect('home')

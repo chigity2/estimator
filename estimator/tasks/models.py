@@ -14,6 +14,8 @@ class Task(models.Model):
 
 class Logs(models.Model):
     task_date = models.DateTimeField(default=timezone.now)
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=200)
     type = models.CharField(max_length=5)
     task = models.CharField(max_length=500)
     completed_date = models.DateTimeField(blank=True, null=True)
