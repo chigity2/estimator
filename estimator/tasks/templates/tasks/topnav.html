@@ -1,36 +1,28 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Estimator</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Tasks</a>
+<nav class="navbar navbar-expand-lg bg-dark shadow" data-bs-theme="dark"">
+    <div class="container-fluid justify-content-between">
+      <a class="navbar-brand" href="{% url 'home' %}">{{ user.first_name }}stimator</a>
+        <ul class="navbar-nav me-0 mb-2 mb-lg-0 flex-row align-items-center">
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'subcontractors' %}">Subcontractors</a>
+          </li>
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'projects' %}">Projects</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
+            <a class="nav-link me-2" href="{% url 'home' %}"><i class="bi bi-list-task" style="font-size: 1.25rem"></i>  <span class="position-absolute translate-middle top-40 badge rounded-pill bg-danger">{{ count }}</span></a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Dropdown
+              <span class="rounded-circle bg-secondary p-2 m-2">{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
             </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Action</a></li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
+            <ul class="dropdown-menu dropdown-menu-end position-absolute">
+              <li><a class="dropdown-item" href="{% url 'trades' %}">Trades</a></li>
+              <li><a class="dropdown-item" href="{% url 'owners' %}">Owners</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
+              <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
             </ul>
           </li>
-          <li class="nav-item">
-            <a class="nav-link disabled">Disabled</a>
-          </li>
         </ul>
-        <form class="d-flex" role="search">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
-      </div>
     </div>
   </nav>

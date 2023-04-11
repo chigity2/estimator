@@ -1,0 +1,128 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{% block title %}Subcontractors List{% endblock %}
+{% block content %}
+<h3>Trades List</h3>
+
+<div class="card mt-3 shadow">
+    <div class="card-header">
+        <div class="d-flex">
+            <span class="me-auto">Subcontractors</span>
+            <button type="button" class="btn btn-primary ms-auto btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addSubModal">
+            +
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <table  id="subTable" class="table table-hover table-sm table-responsive-sm">
+            <thead>
+                <th scope="col">Name</th>
+                <th scope="col">City</th>
+                <th scope="col">State</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Contact</th>
+                <th scope="col">Direct</th>
+            </thead>
+            {% for s,e in group %}
+            <tr>
+                <td><a href="{% url 'sub_detail' s.id %}">{{ s.name }}</a></td>
+                <td>{{ s.city }}</td>
+                <td>{{ s.state }}</td>
+                <td>{{ s.phone }}</td>
+                <td>{{ e }}</td>
+                <td>{{ e.phone }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="addSubModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Subcontractor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="" id="subForm" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="name" name="name" placeholder="Name" required>
+                <label for="name">Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address" name="address1" placeholder="Address Line 1" required>
+                <label for="address">Address Line 1</label>
+            </div>
+                <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address2" name="address2" placeholder="Address Line 2">
+                <label for="address2">Address Line 2</label>
+            </div>
+                <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="city" name="city" placeholder="City" required>
+                <label for="city">City</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="state" name="state" placeholder="State" required>
+                <label for="state">State</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="zip" name="zip" placeholder="Zip" required>
+                <label for="zip">Zip</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="phone" name="phone" placeholder="Phone" required>
+                <label for="phone">Phone</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="fax" name="fax" placeholder="Fax">
+                <label for="fax">Fax</label>
+            </div>
+            <div class="form-check">
+            {{ form.union }}
+                <label class="form-check-label">Union Subcontractor</label>
+            </div>
+            <div class="form-check">
+            {{ form.pw }}
+                <label class="form-check-label">Willing to work Prevailing Wage Projects</label>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form_submit()">Add</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<link rel="stylesheet" href="{% static 'tasks/css/dataTables.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'tasks/css/fixedHeader.bootstrap5.min.css' %}">
+<script src="{% static 'tasks/js/jquery-3.6.4.min.js' %}"></script>
+<script src="{% static 'tasks/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'tasks/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'tasks/js/dataTables.fixedHeader.min.js' %}"></script>
+<script src="{% static 'tasks/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'tasks/js/responsive.bootstrap.min.js' %}"></script>
+
+ <script type="text/javascript">
+  function form_submit() {
+    document.getElementById("subForm").submit();
+   }
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var table = $('#subTable').DataTable( {
+            responsive: true
+        } );
+
+        new $.fn.dataTable.FixedHeader( table );
+    } );
+  </script>
+
+{% endblock %}
+
+

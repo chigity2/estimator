@@ -1,0 +1,110 @@
+{% extends 'tasks/base.html' %}
+{% block title %}{{ user.first_name }}{{ adder }} Profile{% endblock %}
+
+{% block content %}
+<h3 class="my-2">{{ user.first_name }} {{ user.last_name }}
+    {% for g in user.groups.all %}
+    <span class="badge bg-warning shadow">
+        {{ g }}
+    </span>
+    {% endfor %}
+</h3>
+
+<div class="card my-3 shadow">
+    <div class="card-header">
+        Profile Information
+    </div>
+    <div class="card-body">
+        <form method="post" action="#">
+            {% csrf_token %}
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+          <label for="first_name">First Name</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+          <label for="last_name">Last Name</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+          <label for="email">Email Address</label>
+        </div>
+            <button type="submit" class="btn btn-primary">Update Information</button>
+        </form>
+    </div>
+</div>
+<div class="card my-3 shadow">
+    <div class="card-header">
+        Daily Tasks Completed
+    </div>
+    <div class="card-body">
+        <div>
+          <canvas id="tasksChart"></canvas>
+        </div>
+    </div>
+</div>
+{% if perms.user.can_add_user %}
+<div class="card my-3 shadow">
+    <div class="card-header">
+        Daily Tasks Completed
+    </div>
+    <div class="card-body">
+        <div>
+          <canvas id="allTasksChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const ctx = document.getElementById('tasksChart');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [{% for t in tasks_completed %} '{{ t.day|date:"m-d" }}', {% endfor %}],
+      datasets: [{
+        label: 'Tasks Completed',
+        data: [{% for t in tasks_completed %}{{ t.c }}, {% endfor %}],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% if perms.user.can_add_user %}
+<script>
+  const ctx = document.getElementById('allTasksChart');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [{% for t in test_counts %} '{{ t.day|date:"m-d" }}', {% endfor %}],
+      datasets: [{
+        label: 'Tasks Completed',
+        data: [{% for t in tasks_completed %}{{ t.c }}, {% endfor %}],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% endif %}
+
+
+
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{% block title %}Owners{% endblock %}
+{% block content %}
+<h3 class="my-2">Owners List</h3>
+<div class="card shadow">
+    <div class="card-header d-flex">
+        <span class="me-auto">Owners</span><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#owner_modal">+</button>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <th scope="col">Owner</th>
+                <th scope="col">City</th>
+                <th scope="col">State</th>
+            </thead>
+            {% for owner in owners %}
+            <tr>
+                <td>{{ owner.name }}</td>
+                <td>{{ owner.city }}</td>
+                <td>{{ owner.state }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="owner_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Owner</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="" id="owner_form" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="name" name="name" placeholder="Name" required>
+                <label for="name">Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address" name="address" placeholder="Address" required>
+                <label for="address">Address</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="city" name="city" placeholder="City" required>
+                <label for="city">City</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="state" name="state" placeholder="State" required>
+                <label for="state">State</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="zip" name="zip" placeholder="Zip" required>
+                <label for="zip">Zip</label>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form_submit()">Add</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+ <script type="text/javascript">
+  function form_submit() {
+    document.getElementById("owner_form").submit();
+   }
+</script>
+
+
+{% endblock %}

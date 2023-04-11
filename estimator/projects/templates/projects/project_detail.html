@@ -1,0 +1,190 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{% block title %}{{ project_info.number }}: {{project_info.name }}{% endblock %}
+{% block content %}
+<h3 class="my-2">{{ project_info.number }}: {{ project_info.name }}
+    {% if project_info.state_pw %}<badge class="badge text-bg-warning shadow">State PW</badge>{% endif %}
+    {% if project_info.davis_bacon %}<badge class="badge text-bg-warning shadow">Davis-Bacon</badge>{% endif %}
+</h3>
+<div class="row">
+    <div class="col col-6-md">
+        <div class="card h-100 shadow">
+            <div class="card-header d-flex">
+                <span class="me-auto">Project Info</span><button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#project_modal">edit</button>
+            </div>
+            <div class="card-body">
+                {{ project_info.address }}<br />
+                {{ project_info.city }}, {{ project_info.state }} {{ project_info.zip }}<br />
+                {{ project_info.units }} Units
+            </div>
+        </div>
+    </div>
+    <div class="col col-6-md">
+        <div class="card h-100 shadow">
+            <div class="card-header d-flex">
+                <span class="me-auto">Owner Info</span><button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#">edit</button>
+            </div>
+            <div class="card-body">
+                {{ project_info.owner.name }}<br />
+                {{ project_info.owner.address }}<br />
+                {{ project_info.owner.city }}, {{ project_info.owner.state }} {{ project_info.owner.zip }}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card my-3">
+    <div class="card-header d-flex">
+    <span class="me-auto">Bids</span><button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#bid_modal">New Bid</button>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <th scope="col">Bid Number</th>
+                <th scope="col">Planset</th>
+                <th scope="col">Due Date</th>
+                <th scope="col">Status</th>
+            </thead>
+            {% for bid in bids %}
+            <tr>
+                <td><a href="{% url 'bid_detail' project_info.id bid.id %}">{{ bid.bid_number }}</a></td>
+                <td>{{ bid.plans }}</td>
+                <td>{{ bid.date_due|date:'m/d/Y' }}</td>
+                <td>{{ bid.status }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+<div class="card shadow my-3">
+    <div class="card-header">{{ project_info.name }} Notes</div>
+    <div class="card-body">
+        <form class="form" method="post" action="{% url 'note' project_info.id %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Type New Note..." name="note">
+                <button class="btn btn-primary" type="submit">+</button>
+            </div>
+        </form>
+        <table class="table">
+            <thead>
+                <th class="col-2">Date</th>
+                <th class="col">Note</th>
+            </thead>
+            {% for note in notes %}
+            <tr>
+                <td>{{ note.date_added|date:"m/d/Y g:ia" }} : {{ note.employee }}</td>
+                <td>{{ note.note }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="project_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Owner</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'update_project' project_info.id %}" id="project_form" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="number" name="number" value="{{ project_info.number }}" required>
+                <label for="number">Job No.</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="name" name="name" value="{{ project_info.name }}" required>
+                <label for="name">Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address" name="address" value="{{ project_info.address }}" required>
+                <label for="address">Address</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="city" name="city" value="{{ project_info.city }}" required>
+                <label for="city">City</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="state" name="state" value="{{ project_info.state }}" required>
+                <label for="state">State</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="zip" name="zip" value="{{ project_info.zip }}" required>
+                <label for="zip">Zip</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="units" name="units" value="{{ project_info.units }}" required>
+                <label for="Units">Units</label>
+            </div>
+            <select class="form-select" name="owner">
+                {% for owner in owners %}
+                <option value="{{ owner.id }}" {% if owner.id == project_info.owner.id %} selected {% endif %}>{{ owner.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" value="True" {% if project_info.state_pw %} checked {% endif %} id="state_pw" name="state_pw">
+                <label class="form-check-label">State Prevailing Wages</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" value="True" {% if project_info.davis_bacon %} checked {% endif %} id="davis_bacon" name="davis_bacon">
+                <label class="form-check-label">Davis-Bacon Wages</label>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form_submit()">Update</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="bid_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Bid</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'add_bid' project_info.id %}" id="bid_form" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="bid_number" name="bid_number">
+                <label for="bid_number">Bid No.</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="plans" name="plans">
+                <label for="plans">Plans</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="date" id="date_due" name="date_due">
+                <label for="date_due">Date Due</label>
+            </div>
+          </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="bid_submit()">Add Bid</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+ <script type="text/javascript">
+  function form_submit() {
+    document.getElementById("project_form").submit();
+   }
+  function bid_submit() {
+    document.getElementById("bid_form").submit();
+   }
+</script>
+
+
+
+
+
+{% endblock %}

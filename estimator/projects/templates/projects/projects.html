@@ -1,0 +1,100 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{%block title %}Projects List{% endblock %}
+{% block content %}
+<h3 class="my-2">Projects</h3>
+<div class="card shadow">
+    <div class="card-header d-flex">
+        <span class="me-auto">Project List</span><button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#project_modal">+</button>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <th scope="col">Number</th>
+                <th scope="col">Name</th>
+                <th scope="col">Units</th>
+            </thead>
+            {% for project in projects %}
+            <tr>
+                <td><a href="{% url 'project_detail' project.id %}">{{ project.number }}</a></td>
+                <td>{{ project.name }}</td>
+                <td>{{ project.units }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+
+<div class="modal" id="project_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Project</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="" id="project_form" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="number" name="number" placeholder="Job No." required>
+                <label for="number">Job No.</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="name" name="name" placeholder="Name" required>
+                <label for="name">Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address" name="address" placeholder="Address" required>
+                <label for="address">Address</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="city" name="city" placeholder="City" required>
+                <label for="city">City</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="state" name="state" placeholder="State" required>
+                <label for="state">State</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="zip" name="zip" placeholder="Zip" required>
+                <label for="zip">Zip</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="units" name="units" placeholder="Units" required>
+                <label for="Units">Units</label>
+            </div>
+            <div>
+                <select class="form-select" name="owner">
+                    <option selected>Project Owner</option>
+                    {% for owner in owners %}
+                    <option value="{{ owner.id }}">{{ owner.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" value="True" id="state_pw" name="state_pw">
+                <label class="form-check-label">State Prevailing Wages</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" value="True" id="davis_bacon" name="davis_bacon">
+                <label class="form-check-label">Davis-Bacon Wages</label>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form_submit()">Add</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+ <script type="text/javascript">
+  function form_submit() {
+    document.getElementById("project_form").submit();
+   }
+</script>
+{% endblock %}

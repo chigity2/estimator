@@ -1,0 +1,43 @@
+{% extends 'tasks/base.html' %}
+{% block title %}Trades List{% endblock %}
+{% block content %}
+<h3>Trades List</h3>
+<div class="card mt-3">
+    <div class="card-header">
+        Add Trade
+    </div>
+    <div class="card-body">
+        <form action="{% url 'trades' %}" method="post" class="form">
+            {% csrf_token %}
+            <input class="form-control" name="code" placeholder="CSI Code">
+            <input class="form-control" name="name" placeholder="Trade Name">
+            <button class="btn btn-primary" type="submit">Add Trade</button>
+        </form>
+    </div>
+</div>
+<div class="card mt-3">
+    <div class="card-header">
+        Trades List
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <th scope="col">CSI Code</th>
+                <th scope="col">Trade Name</th>
+                <th scope="col">Functions</th>
+            </thead>
+            {% for t in trade_list %}
+            <tr>
+                <td>{{ t.code }}</td>
+                <td>{{ t.name }}</td>
+                <td><a href="{% url 't_del' t.id %}" class="">Delete</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+
+
+
+{% endblock %}

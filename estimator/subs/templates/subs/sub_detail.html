@@ -1,0 +1,275 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{% block title %}{{ sub.name }}{% endblock %}
+{% block content %}
+<h3 class="my-2">{{ sub.name }}
+{% if sub.union %}<span class="badge bg-warning shadow">Union</span>{% endif %}
+{% if sub.pw  %}<span class="badge bg-warning shadow">PW</span>{% endif %}</h3>
+<div class="row my-3">
+    <div class="col-sm col-3-md my-2">
+        <div class="card h-100 shadow">
+            <div class="card-header">
+                    Contact Information
+            </div>
+            <div class="card-body">
+                {{ sub.address1 }} <br/>
+                {% if sub.address2 %}
+                {{ sub.address2 }} <br />
+                {% endif %}
+                {{ sub.city }}, {{ sub.state}} {{ sub.zip }}<br />
+                Office: {{ sub.phone }}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm col-3-md my-2">
+        <div class="card h-100 shadow">
+            <div class="card-header">
+                <div class="d-flex">
+                    <span class="me-auto">Trades</span>
+                    <button type="button" class="btn btn-primary ms-auto btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addTradeModal">
+                    +
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm col-6-md my-2">
+        <div class="card h-100 shadow">
+            <div class="card-header">
+                <div class="d-flex">
+                    <span class="me-auto">Employees</span>
+                    <button type="button" class="btn btn-primary ms-auto btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addEmpModal">
+                    +
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-sm" id="empTable">
+                    <thead>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Phone</th>
+                    </thead>
+                    {% for e in emp %}
+                    <tr>
+                        <td>{{ e.first_name }} {{ e.last_name }}</td>
+                        <td> {{ e.email }}</td>
+                        <td> {{ e.phone }}
+                            {% if sub.primary_contact and sub.primary_contact == e.id %}
+                                <i class="bi bi-star-fill text-warning"></i>
+                            {% else %}
+                            <a href="{% url 'set_primary' sub.id e.id %}"><i class="bi bi-star"></i></a>
+                        {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card my-3 shadow">
+    <div class="card-header">
+        Notes
+    </div>
+    <div class="card-body">
+        <form class="form" method="post" action="">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" name="note" class="form-control" required><button class="btn btn-primary" type="submit">+</button>
+            </div>
+        </form>
+        <table class="table table-sm" id="noteTable">
+            <thead>
+                <th scope="col">Date</th>
+                <th scope="col">Note</th>
+            </thead>
+            {% for note in notes %}
+            <tr>
+                <td>{{ note.time_created|date:"n/j/y g:iA" }}: {{note.employee }}</td>
+                <td>{{ note.note }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+<div class="modal" id="addEmpModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Employee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <form name="addEmployee" class="form" id="addEmployee" method="post" action="{% url 'add_employee' sub.id %}">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="first_name" name="first_name" placeholder="First Name" required>
+                <label for="first_name">First Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="last_name" name="last_name" placeholder="Last Name" required>
+                <label for="last_name">Last Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="email" id="email" name="email" placeholder="Email" required>
+                <label for="email">Email</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="phone" name="phone" placeholder="Phone" required>
+                <label for="phone">Phone</label>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form_submit()">Add</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="addTradeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Trades</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="form" name="addTrade" id="addTrade" method="post" action="{% url 'add_trade' sub.id %}">
+          {% csrf_token %}
+          {% for t in trade_list %}
+          <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="{{ t.id }}">
+              <label class="form-check-label" for="flexCheckDefault">
+                {{ t.code }}-{{ t.name }}
+              </label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form2_submit()">Add</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+  </div>
+</div>
+
+
+<div class="modal" id="updateSubModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Subcontractor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'upd_sub' sub.id %}" id="updateSubForm" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="name" name="name" placeholder="Name" required>
+                <label for="name">Name</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address" name="address1" placeholder="Address Line 1" required>
+                <label for="address">Address Line 1</label>
+            </div>
+                <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address2" name="address2" placeholder="Address Line 2">
+                <label for="address2">Address Line 2</label>
+            </div>
+                <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="city" name="city" placeholder="City" required>
+                <label for="city">City</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="state" name="state" placeholder="State" required>
+                <label for="state">State</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="zip" name="zip" placeholder="Zip" required>
+                <label for="zip">Zip</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="phone" name="phone" placeholder="Phone" required>
+                <label for="phone">Phone</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="fax" name="fax" placeholder="Fax">
+                <label for="fax">Fax</label>
+            </div>
+            <div class="form-check">
+            {{ form.union }}
+                <label class="form-check-label">Union Subcontractor</label>
+            </div>
+            <div class="form-check">
+            {{ form.pw }}
+                <label class="form-check-label">Willing to work Prevailing Wage Projects</label>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="form_submit()">Add</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<link rel="stylesheet" href="{% static 'tasks/css/dataTables.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'tasks/css/fixedHeader.bootstrap5.min.css' %}">
+<script src="{% static 'tasks/js/jquery-3.6.4.min.js' %}"></script>
+<script src="{% static 'tasks/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'tasks/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'tasks/js/dataTables.fixedHeader.min.js' %}"></script>
+<script src="{% static 'tasks/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'tasks/js/responsive.bootstrap.min.js' %}"></script>
+
+
+ <script type="text/javascript">
+  function form_submit() {
+    document.getElementById("addEmployee").submit();
+   };
+
+    function editform_submit() {
+    document.getElementById("updateEmployee").submit();
+   };
+
+    function form2_submit() {
+    document.getElementById("addTrade").submit();
+    };
+
+    $(document).ready(function() {
+        var table = $('#empTable').DataTable( {
+            responsive: true,
+            searching: false,
+            paging: false
+        } );
+
+        new $.fn.dataTable.FixedHeader( table );
+    } );
+
+
+    $(document).ready(function() {
+        var table = $('#noteTable').DataTable( {
+            responsive: true,
+            "lengthChange": false,
+            "pageLength": 50,
+            order: [[0, 'desc']],
+        } );
+
+        new $.fn.dataTable.FixedHeader( table );
+    } );
+
+
+  </script>
+{% endblock %}

@@ -1,5 +1,152 @@
 {% extends 'tasks/base.html' %}
+{% load static %}
+{% block title %}
+Tasks
+{% endblock %}
+
 
 {% block content %}
-<h1>TASKS</h1>
+<h3>Tasks</h3> Total: {{ tot_count }} ({{ ph_count }} calls - {{ no_count }} tasks)
+<br />
+
+<div class="card my-3 shadow">
+    <div class="card-header d-flex">
+        <span class="me-auto">Daily Log</span>
+        <div class="btn-group ms-auto" role="group">
+            <button type="button" class="btn btn-small btn-primary" data-bs-toggle="modal" data-bs-target="#call_modal"><i class="bi bi-telephone"></i></button>
+            <button type="button" class="btn btn-small btn-primary" data-bs-toggle="modal" data-bs-target="#note_modal"><i class="bi bi-journal-text"></i></button>
+        </div>
+    </div>
+    <div class="card-body">
+        {% for call in call_list %}
+        <div class="d-flex my-1 border-bottom">
+            <span class="me-auto"><i class="bi bi-telephone {% if call.task_date|date:'m-d-Y' < today|date:'m-d-Y' %}text-danger{% endif %}"></i> {{ call.task }}</span>
+            <div class="btn-group ms-auto" role="group">
+                <form method="post" action="{% url 'complete_task' call.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                </form>
+                <form method="post" action="{% url 'cancel_task' call.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% for note in note_list %}
+         <div class="d-flex my-1 border-bottom">
+            <span class="me-auto"><i class="bi bi-journal-text {% if note.task_date|date:'m-d-Y' < today|date:'m-d-Y' %}text-danger{% endif %}"></i> {{ note.task }}</span>
+            <div class="btn-group ms-auto" role="group">
+                <form method="post" action="{% url 'complete_task' note.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                </form>
+                <form method="post" action="{% url 'cancel_task' note.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="card my-3 shadow">
+    <div class="card-header">
+        Upcoming Tasks
+    </div>
+    <div class="card-body">
+        {% for task in upcoming %}
+         <div class="d-flex my-1 border-bottom">
+            <span class="me-auto">{{ task.task_date|date:"m-d" }}: <i class="bi {% if task.type == 'note' %}bi-journal-text{% else %}bi-telephone{% endif %}"></i> {{ task.task }}</span>
+                <form method="post" action="{% url 'complete_task' task.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                </form>
+                <form method="post" action="{% url 'cancel_task' task.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal" id="call_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Call</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'log' %}" id="call_form" method="post" class="form">
+            {% csrf_token %}
+            <input type="hidden" name="type" value="phone">
+            <div class="form-floating mb-1">
+                <input class="form-control" type="date" id="task_date" name="task_date" value="{% now 'Y-m-d' %}">
+                <label for="task_date">Task Date</label>
+            </div>
+            <div class="form-floating mb-1">
+                <textarea class="form-control" type="text" id="task" name="task" rows="3"></textarea>
+                <label for="task">Task</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="True" name="quick_add" id="quick_add_ph">
+              <label class="form-check-label" for="quick_add_ph">
+                Task Completed
+              </label>
+            </div>
+          </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="call_submit()">Add Call</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="note_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'log' %}" id="note_form" method="post" class="form">
+            {% csrf_token %}
+            <input type="hidden" name="type" value="task">
+            <div class="form-floating mb-1">
+                <input class="form-control" type="date" id="task_date_note" name="task_date" value="{% now 'Y-m-d' %}">
+                <label for="task_date_note">Task Date</label>
+            </div>
+            <div class="form-floating mb-1">
+                <textarea class="form-control" id="task_note" name="task" rows="5"></textarea>
+                <label for="task_note">Task</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="True" name="quick_add" id="quick_add">
+              <label class="form-check-label" for="quick_add">
+                Task Completed
+              </label>
+            </div>
+          </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="note_submit()">Add Task</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+ <script type="text/javascript">
+  function call_submit() {
+    document.getElementById("call_form").submit();
+   }
+  function note_submit() {
+    document.getElementById("note_form").submit();
+   }
+</script>
+
 {% endblock %}

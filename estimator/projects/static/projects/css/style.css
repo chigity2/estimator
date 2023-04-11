@@ -1,0 +1,9 @@
+.notification{
+    position: absolute;
+    bottom: 5rem;
+    right: 1rem;
+}
+
+#noteTable thead, #empTable thead{
+    display: none;
+}

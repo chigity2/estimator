@@ -1,0 +1,85 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{% block title %}{{ bid_info.project.name }} - {{ bid_info.bid_number }}{% endblock %}
+{% block content %}
+<h3>{{ bid_info.project.name }} - {{ bid_info.bid_number }}</h3>
+
+<div class="card shadow my-3">
+    <div class="card-header d-flex">
+        <span class="me-auto">{{ bid_info.bid_number }} Information</span>
+        <button class="btn btn-sm btn-primary">edit</button>
+    </div>
+    <div class="card-body">
+        Plans: {{ bid_info.plans }}<br />
+        Due: {{ bid_info.date_due|date:"m/d/Y" }}<br />
+        Sub Bids Due: {{ bid_info.sub_bids_due|date:"m/d/Y" }}
+    </div>
+</div>
+<div class="card shadow my-3">
+    <div class="card-header">
+        Bid Packages
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <th class="col">Div & Trade</th>
+                <th class="col">Estimator</th>
+                <th class="col">Subs invited</th>
+                <th class="col">Affirmed Bidders</th>
+                <th class="col">Bids Received</th>
+                <th class="col">Dollar Value</th>
+            </thead>
+            {% for package in packages %}
+            <tr>
+                <td>{{ package.division }} {{ package.trade }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="bid_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Bid</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="#" id="bid_form" method="post" class="form">
+            {% csrf_token %}
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="bid_number" name="bid_number">
+                <label for="bid_number">Bid No.</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="plans" name="plans">
+                <label for="plans">Plans</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="date" id="date_due" name="date_due">
+                <label for="date_due">Date Due</label>
+            </div>
+          </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="bid_submit()">Add Bid</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+ <script type="text/javascript">
+  function package_submit() {
+    document.getElementById("package_form").submit();
+   }
+</script>
+
+{% endblock %}
