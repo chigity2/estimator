@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from tasks.models import Task
 from .models import Subcontractors, Employees, Trades, SubNotes, PrimaryContact, SubTrades
+from projects.models import SubPackages
 from .forms import AddEmployeeForm, AddSubcontractorForm
 
 def trades(request):
@@ -67,8 +68,25 @@ def sub_detail(request, id):
     count = Task.objects.filter(completed=False).filter(assigned_to=request.user.id).count()
     trade_list = Trades.objects.all()
     sub_trades = SubTrades.objects.filter(sub=id)
+    bid_invited = SubPackages.objects.filter(sub=Subcontractors.objects.get(pk=id)).count()
+    bid_affirmed = SubPackages.objects.filter(sub=Subcontractors.objects.get(pk=id), bidding=True).count()
+    bid_received = SubPackages.objects.filter(sub=Subcontractors.objects.get(pk=id), received__isnull=False).count()
 
-    return render(request, 'subs/sub_detail.html', {'sub': sub, 'emp': emp, 'notes': notes, 'count': count, 'trade_list':trade_list, 'form':form, 'sub_form': sub_form, 'sub_trades': sub_trades})
+    context = {
+        'sub': sub,
+        'emp': emp,
+        'notes': notes,
+        'count': count,
+        'trade_list': trade_list,
+        'form': form,
+        'sub_form': sub_form,
+        'sub_trades': sub_trades,
+        'bid_invited': bid_invited,
+        'bid_affirmed': bid_affirmed,
+        'bid_received': bid_received
+    }
+
+    return render(request, 'subs/sub_detail.html', context)
 
 
 def add_employee(request, id):
