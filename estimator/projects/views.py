@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
 from .models import Projects, Architects, ArchitectsContacts, Owners, OwnersContacts, ProjectNotes, Bids, Packages, SubPackages
-from subs.models import Subcontractors, Trades, SubTrades
+from subs.models import Subcontractors, Trades, SubTrades, SubNotes
 from tasks.models import Task
 
 # Create your views here.
