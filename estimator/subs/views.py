@@ -66,8 +66,9 @@ def sub_detail(request, id):
     notes = SubNotes.objects.filter(sub=id).order_by('-time_created')
     count = Task.objects.filter(completed=False).filter(assigned_to=request.user.id).count()
     trade_list = Trades.objects.all()
+    sub_trades = SubTrades.objects.filter(sub=id)
 
-    return render(request, 'subs/sub_detail.html', {'sub': sub, 'emp': emp, 'notes': notes, 'count': count, 'trade_list':trade_list, 'form':form, 'sub_form': sub_form})
+    return render(request, 'subs/sub_detail.html', {'sub': sub, 'emp': emp, 'notes': notes, 'count': count, 'trade_list':trade_list, 'form':form, 'sub_form': sub_form, 'sub_trades': sub_trades})
 
 
 def add_employee(request, id):
@@ -105,6 +106,12 @@ def set_primary_employee(request, sub, emp):
 def add_trade(request, sub):
     if request.method == "POST":
         print(request.POST)
+        trade_checks = request.POST.getlist('trade')
+        print(trade_checks)
+        for t in trade_checks:
+            ts = SubTrades(sub=Subcontractors.objects.get(pk=sub), trade=Trades.objects.get(pk=t))
+            ts.save()
+            messages.success(request, 'Trades added')
         return redirect('sub_detail', sub)
 
     return redirect('sub_detail', sub)
@@ -124,4 +131,20 @@ def upd_emp(request, sub, emp):
     return redirect('sub_detail', sub)
 
 def upd_sub(request, sub):
-    pass
+    if request.method == "POST":
+        s = Subcontractors.objects.get(pk=sub)
+        s.name = request.POST['name']
+        s.address1 = request.POST['address1']
+        s.address2 = request.POST['address2']
+        s.city = request.POST['city']
+        s.state = request.POST['state']
+        s.zip = request.POST['zip']
+        s.phone = request.POST['phone']
+        s.fax = request.POST['fax']
+        s.union = request.POST.get('union', False)
+        s.pw = request.POST.get('pw', False)
+        s.save()
+        messages.success(request, 'Updated Subcontractor')
+        return redirect('sub_detail', sub)
+
+    return redirect('subcontractors')

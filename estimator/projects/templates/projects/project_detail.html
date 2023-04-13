@@ -163,6 +163,10 @@
                 <input class="form-control" type="date" id="date_due" name="date_due">
                 <label for="date_due">Date Due</label>
             </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="date" id="subs_due" name="sub_bids_due">
+                <label for="subs_due">Sub Bids Due</label>
+            </div>
           </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" onclick="bid_submit()">Add Bid</button>
@@ -173,7 +177,8 @@
   </div>
 </div>
 
-<script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+{% endblock %}
+{% block extra_scripts %}
  <script type="text/javascript">
   function form_submit() {
     document.getElementById("project_form").submit();

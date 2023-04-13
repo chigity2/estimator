@@ -1,0 +1,130 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}{{ package_info.project.name }} - {{ package_info.bid.bid_number }} - {{ package_info.trade.code}} {{ package_info.trade.name }}{% endblock %}
+{% block content %}
+<h3><a href="{% url 'project_detail' package_info.project.id %}">{{ package_info.project.name }}</a> -
+    <a href="{% url 'bid_detail' package_info.project.id package_info.bid.id %}">{{ package_info.bid.bid_number }}</a> - {{ package_info.trade.code }} {{ package_info.trade.name }}</h3>
+
+<div class="card shadow my-3">
+    <div class="card-header d-flex">
+        <span class="me-auto">{{ package_info.trade.code }} - {{ package_info.trade.name }} Information</span>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#package_modal">Edit</button>
+    </div>
+    <div class="card-body">
+        Estimator: {{ package_info.estimator.first_name }} {{ package_info.estimator.last_name }}<br />
+        Sub Bids Due: {{ package_info.bid.sub_bids_due|date:"m/d/Y" }}<br />
+        Value: ${{ package_info.value|intcomma }}
+    </div>
+</div>
+<div class="card shadow my-3">
+    <div class="card-header d-flex">
+        <span class="me-auto">Subs Invited</span>
+        <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#subs_modal">+</button>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <th class="col">Sub</th>
+                <th class="col">Bidding</th>
+                <th class="col">Bid Received</th>
+            </thead>
+            {% for sub in subs_bidding %}
+            <tr>
+                <td>{{ sub.sub.name }}</td>
+                <td>
+                    <form method="post" id="b{{sub.id}}" action="{% url 'upd_bidding' package_info.project.id package_info.bid.id package_info.id sub.id%}">
+                        {% csrf_token %}
+                    <select class="form-select" name="bidding" onchange="upd_bidding({{sub.id}})">
+                        <option value="True" {% if sub.bidding %}selected{% endif %}>Yes</option>
+                        <option value="False" {% if not sub.bidding %}selected{% endif %}>No</option>
+                    </select>
+                    </form>
+                </td>
+                <td>
+                    {% if sub.received is None %}
+                    <form method="post" action="{% url 'bid_received' package_info.project.id package_info.bid.id package_info.id sub.id%}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-success" type="submit"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                    {% else %}
+                    {{ sub.received }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="subs_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Invite Subs</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'invite_sub' package_info.project.id package_info.bid.id package_info.id %}" id="subs_form" method="post" class="form">
+            {% csrf_token %}
+            {% for sub in subs %}
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" value="{{ sub.sub.id }}" id="{{ sub.sub.id }}" name="sub">
+                <label class="form-check-label" for="{{ sub.sub.id }}">{{ sub.sub.name }}</label>
+            </div>
+            {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="sub_submit()">Invite Subs</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="package_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Bid Package</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="#" id="package_form" method="post" class="form">
+            {% csrf_token %}
+            <select class="form-select mb-1" name="estimator">
+              {% for estimator in estimators %}
+                <option value="{{ estimator.id }}" {% if estimator.id == package_info.estimator.id %}selected{% endif %}>{{ estimator.first_name }} {{ estimator.last_name }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="number" id="value" name="value" value="{{ package_info.value }}">
+                <label for="value">Value</label>
+            </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="package_submit()">Update Package</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+ <script type="text/javascript">
+  function package_submit() {
+    document.getElementById("package_form").submit();
+   }
+  function sub_submit() {
+    document.getElementById("subs_form").submit();
+   }
+  function upd_bidding(val) {
+    form = 'b' + val;
+    document.getElementById(form).submit();
+  }
+</script>
+
+{% endblock %}

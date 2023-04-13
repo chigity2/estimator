@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Projects, Architects, ArchitectsContacts, Owners, OwnersContacts, ProjectNotes, Bids
+from django.utils import timezone
+from django.contrib.auth.models import User
+from .models import Projects, Architects, ArchitectsContacts, Owners, OwnersContacts, ProjectNotes, Bids, Packages, SubPackages
 from subs.models import Subcontractors, Trades, SubTrades
 from tasks.models import Task
 
@@ -122,11 +124,96 @@ def add_bid(request, id):
 
 def bid_detail(request, project, id):
     if request.method == "POST":
+        project_id = Projects.objects.get(pk=project)
+        bid = Bids.objects.get(pk=id)
+        trade = Trades.objects.get(pk=request.POST['trade'])
+        estimator = User.objects.get(pk=request.POST['estimator'])
+        package = Packages(project=project_id, bid=bid, trade=trade, estimator=estimator)
+        package.save()
+        messages.success(request, 'Bid Package Added')
+        return redirect('bid_detail', project, id)
         pass
 
     trades = Trades.objects.all()
+    estimators = User.objects.all()
     subs = SubTrades.objects.all()
     bid_info = Bids.objects.get(pk=id)
     tasks = Task.objects.filter(completed=False).filter(assigned_to=request.user.id)
     count = tasks.count()
-    return render(request, 'projects/bid_detail.html', {'bid_info': bid_info, 'trades': trades, 'subs': subs, 'count': count})
+    trade_list = Packages.objects.filter(bid=Bids.objects.get(pk=id))
+    package_list = []
+    for t in trade_list:
+        tid = t.id
+        tr = t.trade.code + ' ' + t.trade.name
+        tc = SubPackages.objects.filter(bid_package=t).count()
+        tab = SubPackages.objects.filter(bid_package=t, bidding=True).count()
+        trc = SubPackages.objects.filter(bid_package=t, received__isnull=False).count()
+        est = t.estimator.first_name + ' ' + t.estimator.last_name
+        val = t.value
+        package_list.append({'id': tid, 'trade': tr, 'estimator': est, 'invited': tc, 'bidding': tab, 'received': trc, 'value': val})
+    return render(request, 'projects/bid_detail.html', {'bid_info': bid_info, 'trades': trades, 'subs': subs, 'count': count, 'estimators': estimators, 'package_list': package_list})
+
+
+def update_bid(request, project, id):
+    if request.method == "POST":
+        b = Bids.objects.get(pk=id)
+        b.bid_number = request.POST['bid_number']
+        b.plans = request.POST['plans']
+        b.date_due = request.POST['date_due']
+        b.sub_bids_due = request.POST['sub_bids_due']
+        b.save()
+        messages.success(request, 'Bid Updated')
+        return redirect('update_bid', project, id)
+        pass
+
+    return redirect('bid_detail', project, id)
+
+def bid_packages(request, project, id, package):
+    if request.method == "POST":
+        p = Packages.objects.get(pk=package)
+        p.estimator = User.objects.get(pk=request.POST['estimator'])
+        p.value = request.POST['value']
+        p.save()
+        messages.success(request, 'Package Updated')
+        return redirect('bid_packages', project, id, package)
+        pass
+
+    package_info = Packages.objects.get(pk=package)
+    estimators = User.objects.all()
+    subs = SubTrades.objects.filter(trade=package_info.trade)
+    subs_bidding = SubPackages.objects.filter(bid_package=Packages.objects.get(pk=package))
+    return render(request, 'projects/package_detail.html', {'package_info': package_info, 'estimators': estimators, 'subs': subs, 'subs_bidding': subs_bidding})
+
+
+def invite_sub(request, project, id, package):
+    if request.method == "POST":
+        print('here')
+        sub_checks = request.POST.get('sub')
+        print(sub_checks)
+        for s in sub_checks:
+            sp = SubPackages(bid_package=Packages.objects.get(pk=package), sub=Subcontractors.objects.get(pk=s))
+            sp.save()
+        messages.success('Subs Invited')
+        return redirect('bid_packages', project, id, package)
+        pass
+    pass
+
+
+def bid_received(request, project, id, package, subpack):
+    if request.method == "POST":
+        pack = SubPackages.objects.get(pk=subpack)
+        pack.received = timezone.now()
+        pack.save()
+        messages.success(request, 'Bid Received')
+        return redirect('bid_packages', project, id, package)
+    pass
+
+
+def upd_bidding(request, project, id, package, subpack):
+    if request.method == "POST":
+        sp = SubPackages.objects.get(pk=subpack)
+        sp.bidding = request.POST['bidding']
+        sp.save()
+        messages.success(request, 'Updated')
+        return redirect('bid_packages', project, id, package)
+    pass

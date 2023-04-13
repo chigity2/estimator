@@ -8,8 +8,9 @@
 <div class="row my-3">
     <div class="col-sm col-3-md my-2">
         <div class="card h-100 shadow">
-            <div class="card-header">
-                    Contact Information
+            <div class="card-header d-flex">
+                <span class="me-auto">Contact Information</span>
+                <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#updateSubModal">Edit</button>
             </div>
             <div class="card-body">
                 {{ sub.address1 }} <br/>
@@ -26,16 +27,19 @@
             <div class="card-header">
                 <div class="d-flex">
                     <span class="me-auto">Trades</span>
-                    <button type="button" class="btn btn-primary ms-auto btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addTradeModal">
+                    <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addTradeModal">
                     +
                     </button>
                 </div>
             </div>
             <div class="card-body">
                 <table class="table">
-                    <thead>
-                        <tr
-                    </thead>
+                    {% for s in sub_trades %}
+                    <tr>
+                        <td>{{ s.trade.code }}</td>
+                        <td>{{ s.trade.name }}</td>
+                    </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>
@@ -148,8 +152,8 @@
           {% csrf_token %}
           {% for t in trade_list %}
           <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="" id="{{ t.id }}">
-              <label class="form-check-label" for="flexCheckDefault">
+              <input class="form-check-input" type="checkbox" name="trade" value="{{ t.id }}" id="{{ t.id }}">
+              <label class="form-check-label" for="{{ t.id }}">
                 {{ t.code }}-{{ t.name }}
               </label>
         </div>
@@ -160,6 +164,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </form>
       </div>
+    </div>
   </div>
 </div>
 
@@ -175,48 +180,48 @@
         <form action="{% url 'upd_sub' sub.id %}" id="updateSubForm" method="post" class="form">
             {% csrf_token %}
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="name" name="name" placeholder="Name" required>
+                <input class="form-control" type="text" id="name" name="name" value="{{ sub.name }}" required>
                 <label for="name">Name</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="address" name="address1" placeholder="Address Line 1" required>
+                <input class="form-control" type="text" id="address" name="address1" value="{{ sub.address1 }}" required>
                 <label for="address">Address Line 1</label>
             </div>
-                <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="address2" name="address2" placeholder="Address Line 2">
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="address2" name="address2" value="{{ sub.address2 }}">
                 <label for="address2">Address Line 2</label>
             </div>
-                <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="city" name="city" placeholder="City" required>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" id="city" name="city" value="{{ sub.city }}" required>
                 <label for="city">City</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="state" name="state" placeholder="State" required>
+                <input class="form-control" type="text" id="state" name="state" value="{{ sub.state }}" required>
                 <label for="state">State</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="zip" name="zip" placeholder="Zip" required>
+                <input class="form-control" type="text" id="zip" name="zip" value="{{ sub.zip }}" required>
                 <label for="zip">Zip</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="phone" name="phone" placeholder="Phone" required>
-                <label for="phone">Phone</label>
+                <input class="form-control" type="text" id="sub_phone" name="phone" value="{{ sub.phone }}" required>
+                <label for="sub_phone">Phone</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="fax" name="fax" placeholder="Fax">
+                <input class="form-control" type="text" id="fax" name="fax" value="{{ sub.fax}}">
                 <label for="fax">Fax</label>
             </div>
             <div class="form-check">
-            {{ form.union }}
-                <label class="form-check-label">Union Subcontractor</label>
+                <input type="checkbox" class="form-check-input" value="True" {% if sub.union %} checked {% endif %} id="union" name="union">
+                <label class="form-check-label" for="union">Union</label>
             </div>
             <div class="form-check">
-            {{ form.pw }}
-                <label class="form-check-label">Willing to work Prevailing Wage Projects</label>
+                <input type="checkbox" class="form-check-input" value="True" {% if sub.pw %} checked {% endif %} id="pw" name="pw">
+                <label class="form-check-label" for="pw">Willing to work Prevailing Wage Projects</label>
             </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="form_submit()">Add</button>
+        <button type="button" class="btn btn-primary" onclick="update_submit()">Update</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </form>
       </div>
@@ -224,7 +229,8 @@
   </div>
 </div>
 
-
+{% endblock %}
+{% block extra_scripts %}
 <link rel="stylesheet" href="{% static 'tasks/css/dataTables.bootstrap5.min.css' %}">
 <link rel="stylesheet" href="{% static 'tasks/css/fixedHeader.bootstrap5.min.css' %}">
 <script src="{% static 'tasks/js/jquery-3.6.4.min.js' %}"></script>
@@ -246,6 +252,10 @@
 
     function form2_submit() {
     document.getElementById("addTrade").submit();
+    };
+
+    function update_submit() {
+    document.getElementById("updateSubForm").submit();
     };
 
     $(document).ready(function() {

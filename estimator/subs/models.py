@@ -48,6 +48,9 @@ class SubTrades(models.Model):
     sub = models.ForeignKey(Subcontractors, on_delete=models.CASCADE)
     trade = models.ForeignKey(Trades, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return str(self.sub.name) + ': ' + str(self.trade.name)
+
 
 class SubNotes(models.Model):
     note = models.TextField()

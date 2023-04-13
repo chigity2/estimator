@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{% static 'tasks/css/style.css' %}">
     <script src="{% static 'tasks/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
 {% if messages %}
   <script>
       {% for message in messages %}

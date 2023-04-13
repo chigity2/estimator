@@ -1,13 +1,14 @@
 {% extends 'tasks/base.html' %}
 {% load static %}
+{% load humanize %}
 {% block title %}{{ bid_info.project.name }} - {{ bid_info.bid_number }}{% endblock %}
 {% block content %}
-<h3>{{ bid_info.project.name }} - {{ bid_info.bid_number }}</h3>
+<h3><a href="{% url 'project_detail' bid_info.project.id %}">{{ bid_info.project.name }}</a> - {{ bid_info.bid_number }}</h3>
 
 <div class="card shadow my-3">
     <div class="card-header d-flex">
         <span class="me-auto">{{ bid_info.bid_number }} Information</span>
-        <button class="btn btn-sm btn-primary">edit</button>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#bid_modal">Edit</button>
     </div>
     <div class="card-body">
         Plans: {{ bid_info.plans }}<br />
@@ -16,8 +17,9 @@
     </div>
 </div>
 <div class="card shadow my-3">
-    <div class="card-header">
-        Bid Packages
+    <div class="card-header d-flex">
+        <span class="me-auto">Bid Packages</span>
+        <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#package_modal">+</button>
     </div>
     <div class="card-body">
         <table class="table">
@@ -29,14 +31,14 @@
                 <th class="col">Bids Received</th>
                 <th class="col">Dollar Value</th>
             </thead>
-            {% for package in packages %}
+            {% for package in package_list %}
             <tr>
-                <td>{{ package.division }} {{ package.trade }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td><a href="{% url 'bid_packages' bid_info.project.id bid_info.id package.id %}">{{ package.trade}}</a></td>
+                <td>{{ package.estimator }}</td>
+                <td>{{ package.invited }}</td>
+                <td>{{ package.bidding }}</td>
+                <td>{{ package.received }}</td>
+                <td>${{ package.value|intcomma }}</td>
             </tr>
             {% endfor %}
         </table>
@@ -47,27 +49,31 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Add New Bid</h5>
+        <h5 class="modal-title">Edit Bid</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form action="#" id="bid_form" method="post" class="form">
+        <form action="{% url 'update_bid' bid_info.project.id bid_info.id %}" id="bid_form" method="post" class="form">
             {% csrf_token %}
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="bid_number" name="bid_number">
+                <input class="form-control" type="text" id="bid_number" name="bid_number" value="{{ bid_info.bid_number }}">
                 <label for="bid_number">Bid No.</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="text" id="plans" name="plans">
+                <input class="form-control" type="text" id="plans" name="plans" value="{{ bid_info.plans }}">
                 <label for="plans">Plans</label>
             </div>
             <div class="form-floating mb-1">
-                <input class="form-control" type="date" id="date_due" name="date_due">
+                <input class="form-control" type="date" id="date_due" name="date_due" value="{{ bid_info.date_due|date:'Y-m-d' }}">
                 <label for="date_due">Date Due</label>
+            </div>
+            <div class="form-floating mb-1">
+                <input class="form-control" type="date" id="subs_due" name="sub_bids_due" value="{{ bid_info.sub_bids_due|date:'Y-m-d' }}">
+                <label for="subs_due">Sub Bids Due</label>
             </div>
           </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="bid_submit()">Add Bid</button>
+        <button type="button" class="btn btn-primary" onclick="bid_update()">Update Bid</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </form>
       </div>
@@ -75,10 +81,47 @@
   </div>
 </div>
 
+<div class="modal" id="package_modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Bid Package</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'bid_detail' bid_info.project.id bid_info.id %}" id="package_form" method="post" class="form">
+            {% csrf_token %}
+            <select class="form-select mb-1" name="trade">
+                <option selected>Select Trade</option>
+              {% for trade in trades %}
+                <option value="{{ trade.id }}">{{ trade.code }} - {{ trade.name }}</option>
+              {% endfor %}
+            </select>
+            <select class="form-select mb-1" name="estimator">
+                <option selected>Select Estimator</option>
+              {% for estimator in estimators %}
+                <option value="{{ estimator.id }}">{{ estimator.first_name }} {{ estimator.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="package_submit()">Add Package</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
 <script src="{% static 'projects/js/jquery-3.6.4.min.js' %}"></script>
  <script type="text/javascript">
   function package_submit() {
     document.getElementById("package_form").submit();
+   }
+  function bid_update() {
+    document.getElementById("bid_form").submit();
    }
 </script>
 

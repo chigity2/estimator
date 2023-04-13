@@ -1,5 +1,7 @@
 from django.db import models
 from subs.models import Trades, Subcontractors, SubTrades
+from django.contrib.auth.models import User
+
 # Create your models here.
 
 
@@ -135,6 +137,8 @@ class Packages(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.SET_NULL, null=True, blank=True, related_name="proj_package")
     bid = models.ForeignKey(Bids, on_delete=models.SET_NULL, null=True, blank=True, related_name='bid_package')
     trade = models.ForeignKey(Trades, on_delete=models.SET_NULL, null=True, blank=True, related_name='trade_package')
+    estimator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='package_estimator')
+    value = models.IntegerField(default=0)
 
 
     def __str__(self):
@@ -143,4 +147,18 @@ class Packages(models.Model):
     class Meta:
         verbose_name = "Package"
         verbose_name_plural = "Packages"
+
+
+class SubPackages(models.Model):
+    bid_package = models.ForeignKey(Packages, on_delete=models.SET_NULL, null=True, blank=True, related_name="sub_bid_package")
+    sub = models.ForeignKey(Subcontractors, on_delete=models.SET_NULL, null=True, blank=True, related_name='sub_pack_sub')
+    bidding = models.BooleanField(default=False)
+    received = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.bid_package.project.name) + ' ' + str(self.bid_package.bid.bid_number) + ': ' + str(self.sub.name)
+
+    class Meta:
+        verbose_name = "Sub Package"
+        verbose_name_plural = "Sub Packages"
 

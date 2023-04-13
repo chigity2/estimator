@@ -16,16 +16,16 @@
     <div class="card-body">
         <table  id="subTable" class="table table-hover table-sm table-responsive-sm">
             <thead>
-                <th scope="col">Name</th>
-                <th scope="col">City</th>
-                <th scope="col">State</th>
-                <th scope="col">Phone</th>
-                <th scope="col">Contact</th>
-                <th scope="col">Direct</th>
+                <th class="col">Name</th>
+                <th class="col">City</th>
+                <th class="col">State</th>
+                <th class="col">Phone</th>
+                <th class="col">Contact</th>
+                <th class="col">Direct</th>
             </thead>
             {% for s,e in group %}
             <tr>
-                <td><a href="{% url 'sub_detail' s.id %}">{{ s.name }}</a></td>
+                <td><a href="{% url 'sub_detail' s.id %}">{{ s.name }}{% if s.union %} <span class="badge bg-warning">Union</span>{% endif %}</a></td>
                 <td>{{ s.city }}</td>
                 <td>{{ s.state }}</td>
                 <td>{{ s.phone }}</td>
@@ -96,11 +96,11 @@
     </div>
   </div>
 </div>
-
-
+{% endblock %}
+{% block extra_scripts %}
 <link rel="stylesheet" href="{% static 'tasks/css/dataTables.bootstrap5.min.css' %}">
 <link rel="stylesheet" href="{% static 'tasks/css/fixedHeader.bootstrap5.min.css' %}">
-<script src="{% static 'tasks/js/jquery-3.6.4.min.js' %}"></script>
+
 <script src="{% static 'tasks/js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'tasks/js/dataTables.bootstrap5.min.js' %}"></script>
 <script src="{% static 'tasks/js/dataTables.fixedHeader.min.js' %}"></script>
@@ -114,13 +114,9 @@
 </script>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        var table = $('#subTable').DataTable( {
-            responsive: true
-        } );
-
-        new $.fn.dataTable.FixedHeader( table );
-    } );
+    $(document).ready(function () {
+    $('#subTable').DataTable();
+});
   </script>
 
 {% endblock %}
