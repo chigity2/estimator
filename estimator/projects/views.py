@@ -188,12 +188,12 @@ def bid_packages(request, project, id, package):
 def invite_sub(request, project, id, package):
     if request.method == "POST":
         print('here')
-        sub_checks = request.POST.get('sub')
+        sub_checks = request.POST.getlist('sub')
         print(sub_checks)
         for s in sub_checks:
             sp = SubPackages(bid_package=Packages.objects.get(pk=package), sub=Subcontractors.objects.get(pk=s))
             sp.save()
-        messages.success('Subs Invited')
+        messages.success(request, 'Subs Invited')
         return redirect('bid_packages', project, id, package)
         pass
     pass
